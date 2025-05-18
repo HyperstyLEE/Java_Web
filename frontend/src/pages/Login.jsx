@@ -25,7 +25,10 @@ export default function Login() {
     setLoading(true)
 
     try {
-      const response = await authAPI.login(formData)
+      const response = await authAPI.login({
+        usernameOrEmail: formData.username,
+        password: formData.password
+      })
       localStorage.setItem('token', response.data.token)
       navigate('/')
     } catch (err) {
