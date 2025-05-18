@@ -11,12 +11,17 @@ import org.ly.movie.dto.OrderListDTO;
 import java.util.List;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.ly.movie.model.User;
+import org.ly.movie.repository.UserRepository;
 
 @RestController
 @RequestMapping("/api/order")
 public class OrderController {
     @Autowired
     private OrderService orderService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @PostMapping("/buy")
     public Order buyTicket(@RequestBody BuyTicketDTO dto, HttpServletRequest request) {
@@ -43,8 +48,9 @@ public class OrderController {
         String token = authHeader.substring(7);
         Claims claims = JwtUtil.parseToken(token);
         String username = claims.getSubject();
-        // TODO: 根据username查userId
-        Long userId = 1L; // 这里应根据username查数据库获得userId
+        // 用用户名查 userId
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("用户不存在"));
+        Long userId = user.getId();
         return orderService.listOrders(userId);
     }
 } 

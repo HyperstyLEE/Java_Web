@@ -5,6 +5,7 @@ import Home from './pages/Home'
 import MovieDetail from './pages/MovieDetail'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import Orders from './pages/Orders'
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
           <Route path="/movie/:id" element={<MovieDetail />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/orders" element={<Orders />} />
           {/* 你可以在这里继续添加其他页面路由 */}
         </Routes>
       </main>
