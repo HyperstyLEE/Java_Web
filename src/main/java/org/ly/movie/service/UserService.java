@@ -1,8 +1,10 @@
 package org.ly.movie.service;
 
 import org.ly.movie.dto.UserRegisterDTO;
+import org.ly.movie.dto.UserLoginDTO;
 import org.ly.movie.model.User;
 import org.ly.movie.repository.UserRepository;
+import org.ly.movie.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -33,5 +35,20 @@ public class UserService {
         user.setPhone(dto.getPhone());
 
         userRepository.save(user);
+    }
+
+    public String login(UserLoginDTO dto) {
+        // 支持用户名或邮箱登录
+        User user = userRepository.findByUsername(dto.getUsernameOrEmail())
+                .orElseGet(() -> userRepository.findByEmail(dto.getUsernameOrEmail()).orElse(null));
+        if (user == null) {
+            throw new RuntimeException("用户不存在");
+        }
+        // 校验密码
+        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
+            throw new RuntimeException("密码错误");
+        }
+        // 生成JWT
+        return JwtUtil.generateToken(user.getUsername());
     }
 } 
