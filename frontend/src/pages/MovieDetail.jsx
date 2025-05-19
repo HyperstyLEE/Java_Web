@@ -38,8 +38,7 @@ export default function MovieDetail() {
     try {
       setLoading(true)
       const orderData = {
-        movieId: movie.id,
-        showtimeId: selectedShowtime.id,
+        scheduleId: selectedShowtime.id,
         seatIds: [] // 不再传座位
       }
       await orderAPI.createOrder(orderData)
