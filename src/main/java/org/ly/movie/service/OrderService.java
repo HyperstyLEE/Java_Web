@@ -4,7 +4,13 @@ import org.ly.movie.dto.BuyTicketDTO;
 import org.ly.movie.dto.OrderListDTO;
 import org.ly.movie.model.Order;
 import org.ly.movie.model.OrderItem;
+import org.ly.movie.model.Seat;
+import org.ly.movie.model.Schedule;
+import org.ly.movie.model.Movie;
 import org.ly.movie.repository.OrderRepository;
+import org.ly.movie.repository.SeatRepository;
+import org.ly.movie.repository.ScheduleRepository;
+import org.ly.movie.repository.MovieRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
@@ -18,24 +24,31 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class OrderService {
     @Autowired
     private OrderRepository orderRepository;
+    @Autowired
+    private SeatRepository seatRepository;
+    @Autowired
+    private ScheduleRepository scheduleRepository;
+    @Autowired
+    private MovieRepository movieRepository;
 
     // 购票（下单）
     public Order buyTicket(Long userId, BuyTicketDTO dto) {
-        // TODO: 校验场次、座位可用性、获取票价等（此处简化，实际应完善）
         BigDecimal price = new BigDecimal("50.00"); // 假设票价
-
         Order order = new Order();
         order.setUserId(userId);
-        order.setTotalAmount(price);
-        order.setStatus("PENDING");
+        order.setStatus("PAID"); // 直接设为已支付，模拟支付成功
 
+        // 只生成一张票，不处理座位
+        List<OrderItem> items = new ArrayList<>();
         OrderItem item = new OrderItem();
         item.setOrder(order);
         item.setScheduleId(dto.getScheduleId());
-        item.setSeatNumber(dto.getSeatNumber());
+        item.setSeatNumber("无座位");
         item.setPrice(price);
+        items.add(item);
 
-        order.setItems(Collections.singletonList(item));
+        order.setTotalAmount(price);
+        order.setItems(items);
         return orderRepository.save(order);
     }
 
@@ -47,16 +60,23 @@ public class OrderService {
         for (Order order : orders) {
             OrderListDTO dto = new OrderListDTO();
             dto.setOrderId(order.getId());
-            dto.setOrderNo(String.valueOf(order.getId())); // 可用id或自定义订单号
+            dto.setOrderNo(String.valueOf(order.getId()));
             dto.setBuyTime(order.getCreatedAt().format(dtf));
             dto.setTotalAmount(order.getTotalAmount().doubleValue());
             int ticketCount = order.getItems() != null ? order.getItems().size() : 0;
             dto.setTicketCount(ticketCount);
-            // 这里只取第一个明细的场次，实际可遍历所有明细
             if (order.getItems() != null && !order.getItems().isEmpty()) {
-                // TODO: 通过scheduleId查Schedule和Movie，获取movieName和showTime
-                dto.setMovieName("测试电影"); // 占位
-                dto.setShowTime("2022-11-12 13:13:13"); // 占位
+                OrderItem item = order.getItems().get(0);
+                if (item.getScheduleId() != null) {
+                    Schedule schedule = scheduleRepository.findById(item.getScheduleId()).orElse(null);
+                    if (schedule != null) {
+                        dto.setShowTime(schedule.getShowTime().format(dtf));
+                        Movie movie = schedule.getMovie();
+                        if (movie != null) {
+                            dto.setMovieName(movie.getTitle());
+                        }
+                    }
+                }
             }
             result.add(dto);
         }

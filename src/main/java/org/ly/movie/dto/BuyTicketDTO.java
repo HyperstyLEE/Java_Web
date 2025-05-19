@@ -5,5 +5,4 @@ import lombok.Data;
 @Data
 public class BuyTicketDTO {
     private Long scheduleId;
-    private String seatNumber;
 } 

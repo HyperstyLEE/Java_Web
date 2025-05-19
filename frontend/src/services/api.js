@@ -57,7 +57,7 @@ export const movieAPI = {
 // 订单相关 API
 export const orderAPI = {
   // 创建订单
-  createOrder: (orderData) => api.post('/order/create', orderData),
+  createOrder: (orderData) => api.post('/order/buy', orderData),
   
   // 获取订单列表
   getOrders: () => api.get('/order/list'),
